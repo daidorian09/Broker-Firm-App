@@ -13,7 +13,7 @@ public class GenericSpecificationBuilder<T> {
 
     private final List<BiFunction<Root<T>, CriteriaBuilder, Predicate>> criteriaList = new ArrayList<>();
 
-    public GenericSpecificationBuilder<T> withCondition(boolean condition,
+    public GenericSpecificationBuilder<T> withCondition(final boolean condition,
                                                         BiFunction<Root<T>, CriteriaBuilder, Predicate> predicateSupplier) {
         if (condition) {
             criteriaList.add(predicateSupplier);

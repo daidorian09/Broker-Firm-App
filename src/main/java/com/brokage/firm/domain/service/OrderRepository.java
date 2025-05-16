@@ -1,9 +1,10 @@
 package com.brokage.firm.domain.service;
 
+import com.brokage.firm.application.dto.filter.OrderFilter;
 import com.brokage.firm.domain.entity.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,5 +13,5 @@ public interface OrderRepository {
 
     Optional<Order> findById(final UUID id);
 
-    List<Order> findByCustomerIdAndDateRange(final UUID customerId, final LocalDateTime from, final LocalDateTime to);
+    Page<Order> findByFilters(final OrderFilter filter, final Pageable pageable);
 }

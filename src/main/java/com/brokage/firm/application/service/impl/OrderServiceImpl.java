@@ -1,6 +1,7 @@
 package com.brokage.firm.application.service.impl;
 
 import com.brokage.firm.application.dto.OrderSideExecutionRequest;
+import com.brokage.firm.application.dto.filter.OrderFilter;
 import com.brokage.firm.application.service.OrderService;
 import com.brokage.firm.application.service.strategy.OrderSideExecutionStrategy;
 import com.brokage.firm.domain.entity.Order;
@@ -8,13 +9,12 @@ import com.brokage.firm.domain.enums.OrderSide;
 import com.brokage.firm.domain.service.OrderRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -27,8 +27,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public Order createOrder(final UUID customerId, final String assetName, final String orderSideStr,
-                             final String sizeStr, final String priceStr) {
+    public void createOrder(final UUID customerId, final String assetName, final String orderSideStr,
+                            final String sizeStr, final String priceStr) {
 
         OrderSide side;
         BigDecimal size;
@@ -51,22 +51,12 @@ public class OrderServiceImpl implements OrderService {
         final Order order = Order.create(customerId, assetName, side, size, price);
 
         orderRepository.save(order);
-        return order;
     }
 
     @Override
-    public List<Order> listOrders(final UUID customerId, final LocalDate from, LocalDate to) {
-        final LocalDateTime fromDateTime = Optional.
-                ofNullable(from)
-                .map(LocalDate::atStartOfDay)
-                .orElse(LocalDateTime.MIN);
+    public Page<Order> listOrders(final OrderFilter request, Pageable pageable) {
+        return orderRepository.findByFilters(request, pageable);
 
-        final LocalDateTime toDateTime = Optional.
-                ofNullable(to)
-                .map(t -> t.plusDays(1).atStartOfDay().minusNanos(1))
-                .orElse(LocalDateTime.now());
-
-        return orderRepository.findByCustomerIdAndDateRange(customerId, fromDateTime, toDateTime);
     }
 
     @Override

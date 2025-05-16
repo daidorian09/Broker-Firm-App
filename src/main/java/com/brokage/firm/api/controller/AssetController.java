@@ -32,9 +32,13 @@ public class AssetController {
     @GetMapping
     public ResponseEntity<Page<Asset>> listAssets(
             @ParameterObject final AssetFilterRequest request,
-            @ParameterObject @PageableDefault(size = ApplicationConstant.DEFAULT_PAGE_SIZE, sort = ApplicationConstant.DEFAULT_SORTING_FIELD, direction = Sort.Direction.DESC) final Pageable pageable) {
-        final Page<Asset> assets = assetService
-                .listAssets(new AssetFilter(request.customerId(), request.assetName(), request.minUsableSize(), request.minTotalSize()), pageable);
-        return ResponseEntity.ok(assets);
+            @ParameterObject @PageableDefault(size = ApplicationConstant.DEFAULT_PAGE_SIZE,
+                    sort = ApplicationConstant.DEFAULT_SORTING_FIELD,
+                    direction = Sort.Direction.DESC) final Pageable pageable) {
+        return ResponseEntity.ok(assetService
+                .listAssets(new AssetFilter(request.customerId(),
+                        request.assetName(),
+                        request.minUsableSize(),
+                        request.minTotalSize()), pageable));
     }
 }

@@ -1,17 +1,18 @@
 package com.brokage.firm.infrastructure.persistence.jpa;
 
+import com.brokage.firm.application.dto.filter.OrderFilter;
 import com.brokage.firm.domain.entity.Order;
 import com.brokage.firm.domain.service.OrderRepository;
 import com.brokage.firm.infrastructure.persistence.jpa.repository.JpaOrderRepository;
+import com.brokage.firm.infrastructure.persistence.jpa.spec.OrderSpecification;
 import com.brokage.firm.infrastructure.persistence.mapper.OrderEntityMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -31,10 +32,9 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public List<Order> findByCustomerIdAndDateRange(final UUID customerId, final LocalDateTime from, final LocalDateTime to) {
-        return jpaOrderRepository.findByCustomerIdAndCreateDateBetween(customerId, from, to)
-                .stream()
-                .map(OrderEntityMapper::toDomain)
-                .collect(Collectors.toList());
+    public Page<Order> findByFilters(final OrderFilter filter, final Pageable pageable) {
+        return jpaOrderRepository
+                .findAll(OrderSpecification.byFilter(filter), pageable)
+                .map(OrderEntityMapper::toDomain);
     }
 }
