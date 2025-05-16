@@ -1,6 +1,6 @@
 package com.brokage.firm.api.controller;
 
-import com.brokage.firm.application.constant.ApplicationConstant;
+import com.brokage.firm.application.constant.PaginationConstant;
 import com.brokage.firm.application.dto.filter.OrderFilter;
 import com.brokage.firm.application.dto.request.CreateOrderRequest;
 import com.brokage.firm.application.dto.request.OrderFilterRequest;
@@ -48,8 +48,8 @@ public class OrderController {
             security = {@SecurityRequirement(name = "basicAuth")})
     @GetMapping
     public ResponseEntity<Page<Order>> listOrders(@ParameterObject final OrderFilterRequest request,
-                                                  @ParameterObject @PageableDefault(size = ApplicationConstant.DEFAULT_PAGE_SIZE,
-                                                          sort = ApplicationConstant.DEFAULT_SORTING_FIELD,
+                                                  @ParameterObject @PageableDefault(size = PaginationConstant.DEFAULT_PAGE_SIZE,
+                                                          sort = PaginationConstant.DEFAULT_SORTING_FIELD,
                                                           direction = Sort.Direction.DESC) final Pageable pageable) {
         return ResponseEntity.ok(orderService.listOrders(new OrderFilter(request.customerId(),
                 request.from(),

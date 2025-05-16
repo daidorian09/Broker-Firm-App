@@ -2,6 +2,7 @@ package com.brokage.firm.application.service.impl;
 
 import com.brokage.firm.application.dto.OrderSideExecutionRequest;
 import com.brokage.firm.application.dto.filter.OrderFilter;
+import com.brokage.firm.application.service.LockService;
 import com.brokage.firm.application.service.OrderService;
 import com.brokage.firm.application.service.strategy.OrderSideExecutionStrategy;
 import com.brokage.firm.domain.entity.Order;
@@ -21,9 +22,11 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
+    private static final String ORDER_CANCEL_LOCK_KEY_FORMAT = "order-cancel-lock::%s";
+
     private final OrderRepository orderRepository;
     private final List<OrderSideExecutionStrategy> orderSideExecutionStrategies;
-
+    private final LockService lockService;
 
     @Override
     @Transactional
@@ -62,10 +65,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void cancelOrder(final UUID orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+        final String lockKey = ORDER_CANCEL_LOCK_KEY_FORMAT.formatted(orderId);
 
-        order.cancel();
-        orderRepository.save(order);
+        lockService.executeWithLock(lockKey, () -> {
+            final Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+
+            order.cancel();
+            orderRepository.save(order);
+        });
     }
 }

@@ -1,8 +1,9 @@
 package com.brokage.firm.application.service.impl;
 
-import com.brokage.firm.application.configuration.BrokerCurrencyProperties;
+import com.brokage.firm.application.configuration.BrokerApplicationConfig;
 import com.brokage.firm.application.dto.filter.AssetFilter;
 import com.brokage.firm.application.service.AssetService;
+import com.brokage.firm.application.service.LockService;
 import com.brokage.firm.domain.entity.Asset;
 import com.brokage.firm.domain.service.AssetRepository;
 import jakarta.transaction.Transactional;
@@ -19,8 +20,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AssetServiceImpl implements AssetService {
 
+    private static final String ASSET_LOCK_RESERVE_KEY_FORMAT = "asset-reserve-lock::%s::%s";
+    private static final String ASSET_LOCK_CREATE_KEY_FORMAT = "asset-create-lock::%s::%s";
+
     private final AssetRepository assetRepository;
-    private final BrokerCurrencyProperties currencyProperties;
+    private final LockService lockService;
+    private final BrokerApplicationConfig currencyProperties;
 
     @Override
     @Transactional
@@ -30,10 +35,15 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public void reserveAsset(final UUID customerId, final String assetName, final BigDecimal amount) {
-        final Asset asset = assetRepository.findByCustomerIdAndAssetName(customerId, assetName)
-                .orElseThrow(() -> new IllegalArgumentException("Asset not found: " + assetName));
+        final String lockKey = ASSET_LOCK_RESERVE_KEY_FORMAT.formatted(customerId, assetName);
 
-        assetRepository.save(asset.reserve(amount));
+        lockService.executeWithLock(lockKey, () -> {
+            final Asset asset = assetRepository.findByCustomerIdAndAssetName(customerId, assetName)
+                    .orElseThrow(() -> new IllegalArgumentException("Asset not found: " + assetName));
+
+            asset.reserve(amount);
+            assetRepository.save(asset);
+        });
     }
 
     @Override
@@ -41,15 +51,22 @@ public class AssetServiceImpl implements AssetService {
 
         checkCurrencyAllowedForAssetCreation(assetName);
 
-        final Asset asset = assetRepository.findByCustomerIdAndAssetName(customerId, assetName)
-                .orElseGet(() -> Asset.builder()
-                        .customerId(customerId)
-                        .assetName(assetName)
-                        .totalSize(BigDecimal.ZERO)
-                        .usableSize(BigDecimal.ZERO)
-                        .build()
-                );
-        assetRepository.save(asset.increase(amount));
+        final String lockKey = ASSET_LOCK_CREATE_KEY_FORMAT.formatted(customerId, assetName);
+
+        lockService.executeWithLock(lockKey, () -> {
+
+            final Asset asset = assetRepository.findByCustomerIdAndAssetName(customerId, assetName)
+                    .orElseGet(() -> Asset.builder()
+                            .customerId(customerId)
+                            .assetName(assetName)
+                            .totalSize(BigDecimal.ZERO)
+                            .usableSize(BigDecimal.ZERO)
+                            .build()
+                    );
+
+            asset.increase(amount);
+            assetRepository.save(asset);
+        });
     }
 
     private void checkCurrencyAllowedForAssetCreation(final String assetName) {
@@ -59,5 +76,4 @@ public class AssetServiceImpl implements AssetService {
             throw new IllegalArgumentException("Asset auto-create not allowed: " + assetName);
         }
     }
-
 }
