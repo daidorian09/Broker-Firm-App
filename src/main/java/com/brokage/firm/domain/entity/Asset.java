@@ -41,6 +41,10 @@ public class Asset {
     }
 
     public Asset release(final BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Release amount must be positive");
+        }
+
         return Asset.builder()
                 .customerId(customerId)
                 .assetName(assetName)

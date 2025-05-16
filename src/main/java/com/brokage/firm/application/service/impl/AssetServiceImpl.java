@@ -20,8 +20,9 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AssetServiceImpl implements AssetService {
 
-    private static final String ASSET_LOCK_RESERVE_KEY_FORMAT = "asset-reserve-lock::%s::%s";
-    private static final String ASSET_LOCK_CREATE_KEY_FORMAT = "asset-create-lock::%s::%s";
+    private static final String ASSET_LOCK_RESERVE_KEY_FORMAT = "asset-lock::%s::%s::reserve";
+    private static final String ASSET_LOCK_CREATE_KEY_FORMAT = "asset-lock::%s::%s::release";
+    public static final String ASSET_LOCK_RELEASE_KEY_FORMAT = "asset-lock::%s::%s::create";
 
     private final AssetRepository assetRepository;
     private final LockService lockService;
@@ -41,8 +42,7 @@ public class AssetServiceImpl implements AssetService {
             final Asset asset = assetRepository.findByCustomerIdAndAssetName(customerId, assetName)
                     .orElseThrow(() -> new IllegalArgumentException("Asset not found: " + assetName));
 
-            asset.reserve(amount);
-            assetRepository.save(asset);
+            assetRepository.save(asset.reserve(amount));
         });
     }
 
@@ -64,10 +64,23 @@ public class AssetServiceImpl implements AssetService {
                             .build()
                     );
 
-            asset.increase(amount);
-            assetRepository.save(asset);
+            assetRepository.save(asset.increase(amount));
         });
     }
+
+    @Override
+    @Transactional
+    public void releaseReservedAsset(final UUID customerId, final String assetName, final BigDecimal amount) {
+        final String lockKey = ASSET_LOCK_RELEASE_KEY_FORMAT.formatted(customerId, assetName);
+
+        lockService.executeWithLock(lockKey, () -> {
+            final Asset asset = assetRepository.findByCustomerIdAndAssetName(customerId, assetName)
+                    .orElseThrow(() -> new IllegalStateException("Asset not found: " + assetName));
+
+            assetRepository.save(asset.release(amount));
+        });
+    }
+
 
     private void checkCurrencyAllowedForAssetCreation(final String assetName) {
         if (currencyProperties.getCurrencies()

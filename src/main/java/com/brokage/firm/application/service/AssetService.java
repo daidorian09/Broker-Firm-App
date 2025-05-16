@@ -14,4 +14,6 @@ public interface AssetService {
     void reserveAsset(final UUID customerId, final String assetName, final BigDecimal amount);
 
     void creditOrCreateCustomerAsset(final UUID customerId, final String assetName, final BigDecimal amount);
+
+    void releaseReservedAsset(final UUID customerId, final String assetName, final BigDecimal amount);
 }

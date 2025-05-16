@@ -2,6 +2,7 @@ package com.brokage.firm.application.service.impl;
 
 import com.brokage.firm.application.dto.OrderSideExecutionRequest;
 import com.brokage.firm.application.dto.filter.OrderFilter;
+import com.brokage.firm.application.service.AssetService;
 import com.brokage.firm.application.service.LockService;
 import com.brokage.firm.application.service.OrderService;
 import com.brokage.firm.application.service.strategy.OrderSideExecutionStrategy;
@@ -16,17 +17,20 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 
-    private static final String ORDER_CANCEL_LOCK_KEY_FORMAT = "order-cancel-lock::%s";
+    private static final String ORDER_CANCEL_LOCK_KEY_FORMAT = "order-lock::%s::cancel";
 
     private final OrderRepository orderRepository;
     private final List<OrderSideExecutionStrategy> orderSideExecutionStrategies;
     private final LockService lockService;
+    private final AssetService assetService;
 
     @Override
     @Transactional
@@ -73,6 +77,15 @@ public class OrderServiceImpl implements OrderService {
 
             order.cancel();
             orderRepository.save(order);
+            releaseReservedAssetIfSellOrder(order);
         });
+    }
+
+    private void releaseReservedAssetIfSellOrder(final Order order) {
+        Optional.of(order)
+                .filter(o -> Objects.equals(o.getOrderSide(), OrderSide.SELL))
+                .ifPresent(o -> assetService.releaseReservedAsset(o.getCustomerId(),
+                        o.getAssetName(),
+                        o.getSize()));
     }
 }

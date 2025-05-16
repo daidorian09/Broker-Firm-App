@@ -51,6 +51,10 @@ public class Order {
     }
 
     public void cancel() {
+        if (status == OrderStatus.CANCELED) { //For idempotency
+            return;
+        }
+
         if (status != OrderStatus.PENDING) {
             throw new IllegalStateException("Only PENDING orders can be canceled.");
         }
