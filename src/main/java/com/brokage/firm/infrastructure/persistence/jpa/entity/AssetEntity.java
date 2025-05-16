@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -32,4 +33,8 @@ public class AssetEntity {
     private BigDecimal totalSize;
 
     private BigDecimal usableSize;
+
+    private LocalDateTime createDate;
+
+    private LocalDateTime updateDate;
 }

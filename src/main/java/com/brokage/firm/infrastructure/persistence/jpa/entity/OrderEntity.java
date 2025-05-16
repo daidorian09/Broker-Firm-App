@@ -44,4 +44,6 @@ public class OrderEntity {
     private OrderStatus status;
 
     private LocalDateTime createDate;
+
+    private LocalDateTime updateDate;
 }

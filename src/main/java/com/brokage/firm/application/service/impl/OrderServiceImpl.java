@@ -1,6 +1,8 @@
 package com.brokage.firm.application.service.impl;
 
+import com.brokage.firm.application.dto.OrderSideExecutionRequest;
 import com.brokage.firm.application.service.OrderService;
+import com.brokage.firm.application.service.strategy.OrderSideExecutionStrategy;
 import com.brokage.firm.domain.entity.Order;
 import com.brokage.firm.domain.enums.OrderSide;
 import com.brokage.firm.domain.service.OrderRepository;
@@ -20,6 +22,8 @@ import java.util.UUID;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final List<OrderSideExecutionStrategy> orderSideExecutionStrategies;
+
 
     @Override
     @Transactional
@@ -38,6 +42,12 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalArgumentException("Invalid input data: " + e.getMessage());
         }
 
+        orderSideExecutionStrategies.stream()
+                .filter(s -> s.isMatched(side))
+                .findFirst()
+                .orElseThrow()
+                .execute(new OrderSideExecutionRequest(customerId, assetName, size, price, side));
+
         final Order order = Order.create(customerId, assetName, side, size, price);
 
         orderRepository.save(order);
@@ -51,7 +61,7 @@ public class OrderServiceImpl implements OrderService {
                 .map(LocalDate::atStartOfDay)
                 .orElse(LocalDateTime.MIN);
 
-       final LocalDateTime toDateTime = Optional.
+        final LocalDateTime toDateTime = Optional.
                 ofNullable(to)
                 .map(t -> t.plusDays(1).atStartOfDay().minusNanos(1))
                 .orElse(LocalDateTime.now());

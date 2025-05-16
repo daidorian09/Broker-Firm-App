@@ -2,7 +2,6 @@ package com.brokage.firm.domain.entity;
 
 import com.brokage.firm.domain.enums.OrderSide;
 import com.brokage.firm.domain.enums.OrderStatus;
-import jakarta.persistence.PrePersist;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -22,11 +21,12 @@ public class Order {
     private final BigDecimal price;
     private OrderStatus status;
     private final LocalDateTime createDate;
+    private LocalDateTime updateDate;
 
     @Builder
     public Order(UUID id, UUID customerId, String assetName, OrderSide orderSide,
                  BigDecimal size, BigDecimal price, OrderStatus status, LocalDateTime createDate) {
-        this.id = id != null ? id : UUID.randomUUID();
+        this.id = Optional.ofNullable(id).orElse(UUID.randomUUID());
         this.customerId = customerId;
         this.assetName = assetName;
         this.orderSide = orderSide;
@@ -55,12 +55,6 @@ public class Order {
             throw new IllegalStateException("Only PENDING orders can be canceled.");
         }
         this.status = OrderStatus.CANCELED;
-    }
-
-    public void match() {
-        if (status != OrderStatus.PENDING) {
-            throw new IllegalStateException("Only PENDING orders can be matched.");
-        }
-        this.status = OrderStatus.MATCHED;
+        this.updateDate = LocalDateTime.now();
     }
 }

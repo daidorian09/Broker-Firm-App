@@ -37,9 +37,4 @@ public class OrderRepositoryImpl implements OrderRepository {
                 .map(OrderEntityMapper::toDomain)
                 .collect(Collectors.toList());
     }
-
-    @Override
-    public void deleteById(final UUID id) {
-        jpaOrderRepository.deleteById(id);
-    }
 }

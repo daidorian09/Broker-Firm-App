@@ -37,10 +37,10 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi betSlipAndBulletinApi() {
+    public GroupedOpenApi orderAndAssetApi() {
         return GroupedOpenApi.builder()
                 .group("controllers")
-                .pathsToMatch("/api/orders/**")
+                .pathsToMatch("/api/orders/**", "/api/assets/**")
                 .build();
     }
 }

@@ -10,5 +10,5 @@ import java.util.UUID;
 
 @Repository
 public interface JpaOrderRepository extends JpaRepository<OrderEntity, UUID> {
-    List<OrderEntity> findByCustomerIdAndCreateDateBetween(UUID customerId, LocalDateTime from, LocalDateTime to);
+    List<OrderEntity> findByCustomerIdAndCreateDateBetween(final UUID customerId, final LocalDateTime from, final LocalDateTime to);
 }

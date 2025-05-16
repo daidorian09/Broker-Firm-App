@@ -60,11 +60,11 @@ public class OrderController {
 
             @Parameter(description = "Start date (optional). Format: dd-MM-yyyy", example = "05-01-2025")
             @RequestParam(required = false)
-            @DateTimeFormat(pattern = "MM-dd-yyyy") final LocalDate from,
+            @DateTimeFormat(pattern = "dd-MM-yyyy") final LocalDate from,
 
             @Parameter(description = "End date (optional). Format: dd-MM-yyyy", example = "05-15-2025")
             @RequestParam(required = false)
-            @DateTimeFormat(pattern = "MM-dd-yyyy") final LocalDate to
+            @DateTimeFormat(pattern = "dd-MM-yyyy") final LocalDate to
     ) {
         return ResponseEntity.ok(orderService.listOrders(customerId, from, to));
     }
