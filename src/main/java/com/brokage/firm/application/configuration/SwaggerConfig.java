@@ -19,7 +19,7 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Live Betting API")
+                        .title("Brokage Firm API")
                         .description("API documentation for brokage firm operations")
                         .version("1.0.0"))
                 .addSecurityItem(new SecurityRequirement()

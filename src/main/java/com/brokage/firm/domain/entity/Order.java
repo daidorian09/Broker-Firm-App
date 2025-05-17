@@ -2,11 +2,13 @@ package com.brokage.firm.domain.entity;
 
 import com.brokage.firm.domain.enums.OrderSide;
 import com.brokage.firm.domain.enums.OrderStatus;
+import com.brokage.firm.domain.exception.OrderCannotBeCanceledException;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -55,9 +57,10 @@ public class Order {
             return;
         }
 
-        if (status != OrderStatus.PENDING) {
-            throw new IllegalStateException("Only PENDING orders can be canceled.");
+        if (!Objects.equals(status, OrderStatus.PENDING)) {
+            throw new OrderCannotBeCanceledException(status);
         }
+
         this.status = OrderStatus.CANCELED;
         this.updateDate = LocalDateTime.now();
     }

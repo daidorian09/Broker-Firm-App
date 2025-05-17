@@ -1,5 +1,7 @@
 package com.brokage.firm.domain.entity;
 
+import com.brokage.firm.domain.exception.InsufficientUsableAssetSizeException;
+import com.brokage.firm.domain.exception.NegativeAssetReleaseAmountException;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,6 +13,7 @@ import java.util.UUID;
 @Getter
 public class Asset {
 
+    public static final int MINIMUM_AMOUNT = 0;
     private final UUID customerId;
     private final String assetName;
     private final BigDecimal totalSize;
@@ -29,9 +32,10 @@ public class Asset {
     }
 
     public Asset reserve(final BigDecimal amount) {
-        if (usableSize.compareTo(amount) < 0) {
-            throw new IllegalArgumentException("Insufficient usable size.");
+        if (usableSize.compareTo(amount) < MINIMUM_AMOUNT) {
+            throw new InsufficientUsableAssetSizeException(usableSize, amount);
         }
+
         return Asset.builder()
                 .customerId(customerId)
                 .assetName(assetName)
@@ -41,8 +45,8 @@ public class Asset {
     }
 
     public Asset release(final BigDecimal amount) {
-        if (amount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Release amount must be positive");
+        if (amount.compareTo(BigDecimal.ZERO) < MINIMUM_AMOUNT) {
+            throw new NegativeAssetReleaseAmountException(amount);
         }
 
         return Asset.builder()

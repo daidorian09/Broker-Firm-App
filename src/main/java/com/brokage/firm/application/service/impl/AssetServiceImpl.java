@@ -29,7 +29,6 @@ public class AssetServiceImpl implements AssetService {
     private final BrokerApplicationConfig currencyProperties;
 
     @Override
-    @Transactional
     public Page<Asset> listAssets(final AssetFilter filter, final Pageable pageable) {
         return assetRepository.findByFilters(filter, pageable);
     }

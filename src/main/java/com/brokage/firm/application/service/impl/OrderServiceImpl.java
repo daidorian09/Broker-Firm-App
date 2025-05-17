@@ -2,12 +2,14 @@ package com.brokage.firm.application.service.impl;
 
 import com.brokage.firm.application.dto.OrderSideExecutionRequest;
 import com.brokage.firm.application.dto.filter.OrderFilter;
+import com.brokage.firm.application.dto.request.CreateOrderRequest;
 import com.brokage.firm.application.service.AssetService;
 import com.brokage.firm.application.service.LockService;
 import com.brokage.firm.application.service.OrderService;
 import com.brokage.firm.application.service.strategy.OrderSideExecutionStrategy;
 import com.brokage.firm.domain.entity.Order;
 import com.brokage.firm.domain.enums.OrderSide;
+import com.brokage.firm.domain.exception.OrderNotFoundException;
 import com.brokage.firm.domain.service.OrderRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -34,28 +36,19 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public void createOrder(final UUID customerId, final String assetName, final String orderSideStr,
-                            final String sizeStr, final String priceStr) {
+    public void createOrder(final CreateOrderRequest request) {
 
-        OrderSide side;
-        BigDecimal size;
-        BigDecimal price;
-
-        try {
-            side = OrderSide.valueOf(orderSideStr.toUpperCase());
-            size = new BigDecimal(sizeStr);
-            price = new BigDecimal(priceStr);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid input data: " + e.getMessage());
-        }
+        final OrderSide side = request.toOrderSide();
+        final BigDecimal size = request.toSize();
+        final BigDecimal price = request.toPrice();
 
         orderSideExecutionStrategies.stream()
                 .filter(s -> s.isMatched(side))
                 .findFirst()
                 .orElseThrow()
-                .execute(new OrderSideExecutionRequest(customerId, assetName, size, price, side));
+                .execute(new OrderSideExecutionRequest(request.customerId(), request.assetName(), size, price, side));
 
-        final Order order = Order.create(customerId, assetName, side, size, price);
+        final Order order = Order.create(request.customerId(), request.assetName(), side, size, price);
 
         orderRepository.save(order);
     }
@@ -69,12 +62,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public void cancelOrder(final UUID orderId) {
+        final Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
         final String lockKey = ORDER_CANCEL_LOCK_KEY_FORMAT.formatted(orderId);
-
         lockService.executeWithLock(lockKey, () -> {
-            final Order order = orderRepository.findById(orderId)
-                    .orElseThrow(() -> new IllegalArgumentException("Order not found"));
-
             order.cancel();
             orderRepository.save(order);
             releaseReservedAssetIfSellOrder(order);

@@ -39,7 +39,7 @@ public class OrderController {
             security = {@SecurityRequirement(name = "basicAuth")})
     @PostMapping
     public ResponseEntity<Void> createOrder(@RequestBody final CreateOrderRequest request) {
-        orderService.createOrder(request.customerId(), request.assetName(), request.orderSide(), request.size(), request.price());
+        orderService.createOrder(request);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

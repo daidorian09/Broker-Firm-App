@@ -10,6 +10,8 @@ import java.util.UUID;
 
 public interface AssetRepository {
     Page<Asset> findByFilters(final AssetFilter filter, final Pageable pageable);
+
     Optional<Asset> findByCustomerIdAndAssetName(final UUID customerId, final String assetName);
+
     void save(final Asset asset);
 }

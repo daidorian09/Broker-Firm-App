@@ -10,7 +10,7 @@ import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
-public class SellOrderSideStrategy extends AbstractOrderSideExecutionStrategy implements OrderSideExecutionStrategy {
+public non-sealed class SellOrderSideStrategy extends AbstractOrderSideExecutionStrategy implements OrderSideExecutionStrategy {
 
     private final AssetService assetService;
 
