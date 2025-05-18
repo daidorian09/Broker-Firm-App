@@ -22,12 +22,12 @@ public class AuthController {
             summary = "Authenticate customer and generate JWT",
             description = """
                     Authenticates a customer using email and password credentials.
-                    If authentication is successful, returns a JWT access token that must be included 
+                    If authentication is successful, returns a JWT access token that must be included\s
                     in the Authorization header for all subsequent requests (as a Bearer token).
-                    
+                   \s
                     Example usage:
                     Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR...
-                    """,
+                   \s""",
             tags = {"Authentication"}
     )
     @PostMapping("/login")

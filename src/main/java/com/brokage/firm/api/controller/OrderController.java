@@ -1,7 +1,6 @@
 package com.brokage.firm.api.controller;
 
 import com.brokage.firm.application.constant.PaginationConstant;
-import com.brokage.firm.application.dto.CustomUserPrincipal;
 import com.brokage.firm.application.dto.filter.OrderFilter;
 import com.brokage.firm.application.dto.request.CreateOrderRequest;
 import com.brokage.firm.application.dto.request.OrderFilterRequest;
@@ -17,7 +16,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

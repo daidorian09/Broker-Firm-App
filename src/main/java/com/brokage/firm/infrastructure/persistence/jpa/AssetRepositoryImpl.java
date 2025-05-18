@@ -4,7 +4,6 @@ import com.brokage.firm.application.dto.filter.AssetFilter;
 import com.brokage.firm.domain.entity.Asset;
 import com.brokage.firm.domain.service.AssetRepository;
 import com.brokage.firm.infrastructure.persistence.jpa.repository.JpaAssetRepository;
-import com.brokage.firm.infrastructure.persistence.jpa.repository.JpaCustomerRepository;
 import com.brokage.firm.infrastructure.persistence.jpa.spec.AssetSpecification;
 import com.brokage.firm.infrastructure.persistence.mapper.AssetEntityMapper;
 import lombok.RequiredArgsConstructor;

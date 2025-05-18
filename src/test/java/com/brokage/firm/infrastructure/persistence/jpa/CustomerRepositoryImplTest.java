@@ -1,8 +1,5 @@
 package com.brokage.firm.infrastructure.persistence.jpa;
 
-import static org.assertj.core.api.Assertions.filter;
-import static org.junit.jupiter.api.Assertions.*;
-
 
 import com.brokage.firm.domain.entity.Customer;
 import com.brokage.firm.domain.enums.UserRole;
