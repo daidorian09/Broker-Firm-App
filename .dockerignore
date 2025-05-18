@@ -1,0 +1,15 @@
+# IntelliJ / VSCode project files
+.idea/
+*.iml
+.vscode/
+
+# Logs
+*.log
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore

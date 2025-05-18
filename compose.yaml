@@ -11,5 +11,18 @@ services:
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
 
+  app:
+    image: broker-firm-app
+    container_name: broker-firm
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - redis
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
 volumes:
   redis-data:
