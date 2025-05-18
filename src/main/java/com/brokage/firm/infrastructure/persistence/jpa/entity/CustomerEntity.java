@@ -1,6 +1,10 @@
 package com.brokage.firm.infrastructure.persistence.jpa.entity;
 
+import com.brokage.firm.domain.enums.UserRole;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -23,7 +27,11 @@ public class CustomerEntity {
     @Id
     private UUID id;
 
-    private String username;
-
     private String password;
+
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
+
+    @Column(nullable = false, unique = true)
+    private String email;
 }

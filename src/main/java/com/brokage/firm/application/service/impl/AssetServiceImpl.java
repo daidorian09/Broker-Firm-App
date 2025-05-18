@@ -5,7 +5,10 @@ import com.brokage.firm.application.dto.filter.AssetFilter;
 import com.brokage.firm.application.service.AssetService;
 import com.brokage.firm.application.service.LockService;
 import com.brokage.firm.domain.entity.Asset;
+import com.brokage.firm.domain.exception.AssetDoesNotBelongToCustomerException;
+import com.brokage.firm.domain.exception.DisallowedAssetException;
 import com.brokage.firm.domain.service.AssetRepository;
+import com.brokage.firm.infrastructure.util.SecurityUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -30,19 +33,22 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     public Page<Asset> listAssets(final AssetFilter filter, final Pageable pageable) {
-        return assetRepository.findByFilters(filter, pageable);
+        Page<Asset> assets = assetRepository.findByFilters(filter, pageable);
+
+        assets.stream()
+                .findFirst()
+                .ifPresent(asset -> SecurityUtil.assertOwnershipOrAdmin(asset.getCustomerId()));
+
+        return assets;
     }
 
     @Override
     public void reserveAsset(final UUID customerId, final String assetName, final BigDecimal amount) {
+        final Asset asset = assetRepository.findByCustomerIdAndAssetName(customerId, assetName)
+                .orElseThrow(() -> new AssetDoesNotBelongToCustomerException(customerId, assetName));
+
         final String lockKey = ASSET_LOCK_RESERVE_KEY_FORMAT.formatted(customerId, assetName);
-
-        lockService.executeWithLock(lockKey, () -> {
-            final Asset asset = assetRepository.findByCustomerIdAndAssetName(customerId, assetName)
-                    .orElseThrow(() -> new IllegalArgumentException("Asset not found: " + assetName));
-
-            assetRepository.save(asset.reserve(amount));
-        });
+        lockService.executeWithLock(lockKey, () -> assetRepository.save(asset.reserve(amount)));
     }
 
     @Override
@@ -70,14 +76,11 @@ public class AssetServiceImpl implements AssetService {
     @Override
     @Transactional
     public void releaseReservedAsset(final UUID customerId, final String assetName, final BigDecimal amount) {
+        final Asset asset = assetRepository.findByCustomerIdAndAssetName(customerId, assetName)
+                .orElseThrow(() -> new AssetDoesNotBelongToCustomerException(customerId, assetName));
+
         final String lockKey = ASSET_LOCK_RELEASE_KEY_FORMAT.formatted(customerId, assetName);
-
-        lockService.executeWithLock(lockKey, () -> {
-            final Asset asset = assetRepository.findByCustomerIdAndAssetName(customerId, assetName)
-                    .orElseThrow(() -> new IllegalStateException("Asset not found: " + assetName));
-
-            assetRepository.save(asset.release(amount));
-        });
+        lockService.executeWithLock(lockKey, () -> assetRepository.save(asset.release(amount)));
     }
 
 
@@ -85,7 +88,7 @@ public class AssetServiceImpl implements AssetService {
         if (currencyProperties.getCurrencies()
                 .stream()
                 .noneMatch(c -> StringUtils.equalsIgnoreCase(c, assetName))) {
-            throw new IllegalArgumentException("Asset auto-create not allowed: " + assetName);
+            throw new DisallowedAssetException(assetName);
         }
     }
 }

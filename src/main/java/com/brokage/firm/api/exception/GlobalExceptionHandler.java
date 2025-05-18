@@ -45,6 +45,42 @@ public class GlobalExceptionHandler {
         ));
     }
 
+    @ExceptionHandler(AuthenticationFailedException.class)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> handleAuthenticationFailedException(final AuthenticationFailedException ex) {
+        log.warn("AuthenticationFailedException occurred: {}", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(buildBody(
+                ex.getClass().getSimpleName(),
+                ex.getMessage(),
+                HttpStatus.UNAUTHORIZED
+        ));
+    }
+
+    @ExceptionHandler(CustomerAlreadyExistsException.class)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> handleCustomerAlreadyExistsException(final CustomerAlreadyExistsException ex) {
+        log.warn("CustomerAlreadyExistsException occurred: {}", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(buildBody(
+                ex.getClass().getSimpleName(),
+                ex.getMessage(),
+                HttpStatus.CONFLICT
+        ));
+    }
+
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> handleUnauthorizedAccessException(final UnauthorizedAccessException ex) {
+        log.warn("UnauthorizedAccessException occurred: {}", ex.getMessage());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(buildBody(
+                ex.getClass().getSimpleName(),
+                ex.getMessage(),
+                HttpStatus.FORBIDDEN
+        ));
+    }
+
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public ResponseEntity<Map<String, Object>> handleGenericException(final Exception ex) {

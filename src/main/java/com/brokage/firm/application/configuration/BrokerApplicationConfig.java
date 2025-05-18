@@ -16,6 +16,7 @@ public class BrokerApplicationConfig {
     private List<String> currencies = new ArrayList<>();
     private RedisConfig redis = new RedisConfig();
     private LockingTimeConfig lockingTime = new LockingTimeConfig();
+    private SecurityConfig securityConfig = new SecurityConfig();
 
     @Getter
     @Setter
@@ -29,5 +30,11 @@ public class BrokerApplicationConfig {
     public static class LockingTimeConfig {
         private int waitTimeInSeconds;
         private int leaseTimeInSeconds;
+    }
+
+    @Getter
+    @Setter
+    public static class SecurityConfig {
+        private String jwtSecretKey;
     }
 }

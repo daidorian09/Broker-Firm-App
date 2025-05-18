@@ -1,6 +1,7 @@
 package com.brokage.firm.infrastructure.security;
 
 import com.brokage.firm.application.constant.SecurityConstant;
+import com.brokage.firm.domain.enums.UserRole;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,10 +16,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+
+import static com.brokage.firm.application.constant.SecurityConstant.AUTHORIZATION_ROLE;
 
 public class HeaderAuthenticationFilter extends OncePerRequestFilter {
 
@@ -36,7 +36,7 @@ public class HeaderAuthenticationFilter extends OncePerRequestFilter {
             final Authentication auth = new UsernamePasswordAuthenticationToken(
                     UUID.randomUUID().toString(),
                     null,
-                    List.of(new SimpleGrantedAuthority(SecurityConstant.USER_ROLE))
+                    Collections.singletonList((new SimpleGrantedAuthority(AUTHORIZATION_ROLE + UserRole.ADMIN)))
             );
             ((UsernamePasswordAuthenticationToken) auth).setDetails(
                     new WebAuthenticationDetailsSource().buildDetails(request)

@@ -22,13 +22,20 @@ public class SwaggerConfig {
                         .title("Brokage Firm API")
                         .description("API documentation for brokage firm operations")
                         .version("1.0.0"))
-                .addSecurityItem(new SecurityRequirement()
-                        .addList("basicAuth"))
+                .addSecurityItem(new SecurityRequirement().addList("basicAuth"))
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .components(new Components()
                         .addSecuritySchemes("basicAuth",
                                 new SecurityScheme()
                                         .type(SecurityScheme.Type.HTTP)
-                                        .scheme("basic")))
+                                        .scheme("basic"))
+                        .addSecuritySchemes("bearerAuth",
+                                new SecurityScheme()
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")
+                        )
+                )
                 .servers(List.of(
                         new Server()
                                 .url("http://localhost:8080")
@@ -37,10 +44,10 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi orderAndAssetApi() {
+    public GroupedOpenApi apiControllers() {
         return GroupedOpenApi.builder()
                 .group("controllers")
-                .pathsToMatch("/api/orders/**", "/api/assets/**")
+                .pathsToMatch("/api/orders/**", "/api/assets/**", "/api/authentication/**", "/api/customers/**")
                 .build();
     }
 }

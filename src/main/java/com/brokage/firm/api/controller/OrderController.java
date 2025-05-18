@@ -1,6 +1,7 @@
 package com.brokage.firm.api.controller;
 
 import com.brokage.firm.application.constant.PaginationConstant;
+import com.brokage.firm.application.dto.CustomUserPrincipal;
 import com.brokage.firm.application.dto.filter.OrderFilter;
 import com.brokage.firm.application.dto.request.CreateOrderRequest;
 import com.brokage.firm.application.dto.request.OrderFilterRequest;
@@ -16,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+@SecurityRequirement(name = "bearerAuth")
 @SecurityRequirement(name = "basicAuth")
 @RestController
 @RequestMapping("/api/orders")
@@ -36,7 +39,7 @@ public class OrderController {
 
     @Operation(summary = "Create a stock order",
             description = "Creates a new stock order (BUY or SELL) for a given customer and asset.",
-            security = {@SecurityRequirement(name = "basicAuth")})
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @PostMapping
     public ResponseEntity<Void> createOrder(@RequestBody final CreateOrderRequest request) {
         orderService.createOrder(request);
@@ -45,7 +48,7 @@ public class OrderController {
 
     @Operation(summary = "List stock orders",
             description = "Lists all stock orders for a given customer. Date range (from-to) is optional.",
-            security = {@SecurityRequirement(name = "basicAuth")})
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @GetMapping
     public ResponseEntity<Page<Order>> listOrders(@ParameterObject final OrderFilterRequest request,
                                                   @ParameterObject @PageableDefault(size = PaginationConstant.DEFAULT_PAGE_SIZE,
@@ -62,7 +65,7 @@ public class OrderController {
 
     @Operation(summary = "Cancel an order",
             description = "Cancels a PENDING stock order by its ID. Only PENDING orders can be canceled.",
-            security = {@SecurityRequirement(name = "basicAuth")})
+            security = {@SecurityRequirement(name = "basicAuth"), @SecurityRequirement(name = "bearerAuth")})
     @DeleteMapping("/{orderId}")
     public ResponseEntity<Void> cancelOrder(@PathVariable final UUID orderId) {
         orderService.cancelOrder(orderId);

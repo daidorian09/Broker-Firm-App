@@ -11,11 +11,13 @@ import com.brokage.firm.domain.entity.Order;
 import com.brokage.firm.domain.enums.OrderSide;
 import com.brokage.firm.domain.exception.OrderNotFoundException;
 import com.brokage.firm.domain.service.OrderRepository;
+import com.brokage.firm.infrastructure.util.SecurityUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -55,8 +57,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Page<Order> listOrders(final OrderFilter request, Pageable pageable) {
-        return orderRepository.findByFilters(request, pageable);
+        Page<Order> orders = orderRepository.findByFilters(request, pageable);
 
+        orders.stream()
+                .findFirst()
+                .ifPresent(order -> SecurityUtil.assertOwnershipOrAdmin(order.getCustomerId()));
+
+        return orders;
     }
 
     @Override
@@ -64,6 +71,8 @@ public class OrderServiceImpl implements OrderService {
     public void cancelOrder(final UUID orderId) {
         final Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        SecurityUtil.assertOwnershipOrAdmin(order.getCustomerId());
 
         final String lockKey = ORDER_CANCEL_LOCK_KEY_FORMAT.formatted(orderId);
         lockService.executeWithLock(lockKey, () -> {
